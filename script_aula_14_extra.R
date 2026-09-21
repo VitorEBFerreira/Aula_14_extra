@@ -132,6 +132,146 @@ table(dados_aula14$PAM, useNA = "ifany")
 # TPIC: total de compradores com perfil PIC
 # TAIC: total de compradores com perfil AIC
 # TGIC: total de compradores com perfil GIC
+# Função para calcular as estatísticas
+calcula_resumo = function(dados, nivel, codigo) {
+  
+  # Mulheres + Carro
+  mulheres_carro = dados[
+    as.character(dados$SEXO_PROPRIETARIO) == "Feminino" &
+      as.character(dados$TIPO_VEICULO) == "Carro",
+  ]
+  
+  # Homens + Moto
+  homens_moto = dados[
+    as.character(dados$SEXO_PROPRIETARIO) == "Masculino" &
+      as.character(dados$TIPO_VEICULO) == "Moto",
+  ]
+  
+  # Função para percentis
+  p25 = function(x) {
+    if (sum(!is.na(x)) == 0) return(NA)
+    quantile(x, probs = 0.25, na.rm = TRUE, names = FALSE)
+  }
+  
+  p50 = function(x) {
+    if (sum(!is.na(x)) == 0) return(NA)
+    quantile(x, probs = 0.50, na.rm = TRUE, names = FALSE)
+  }
+  
+  p75 = function(x) {
+    if (sum(!is.na(x)) == 0) return(NA)
+    quantile(x, probs = 0.75, na.rm = TRUE, names = FALSE)
+  }
+  
+  data.frame(
+    ANO = 2025,
+    NIVEL = nivel,
+    CODIGO = codigo,
+    TVV = nrow(dados),
+    TVRC = sum(complete.cases(
+      dados[, c("MUNICIPIO",
+                "SEXO_PROPRIETARIO",
+                "IDADE_PROPRIETARIO",
+                "TIPO_VEICULO",
+                "VALOR_VEICULO")]
+    )),
+    TVVF = sum(as.character(dados$SEXO_PROPRIETARIO) == "Feminino",
+               na.rm = TRUE),
+    TVVM = sum(as.character(dados$SEXO_PROPRIETARIO) == "Masculino",
+               na.rm = TRUE),
+    
+    TVCF = sum(
+      as.character(dados$SEXO_PROPRIETARIO) == "Feminino" &
+        as.character(dados$TIPO_VEICULO) == "Carro",
+      na.rm = TRUE
+    ),
+    TVCM = sum(
+      as.character(dados$SEXO_PROPRIETARIO) == "Masculino" &
+        as.character(dados$TIPO_VEICULO) == "Carro",
+      na.rm = TRUE
+    ),
+    TVMF = sum(
+      as.character(dados$SEXO_PROPRIETARIO) == "Feminino" &
+        as.character(dados$TIPO_VEICULO) == "Moto",
+      na.rm = TRUE
+    ),
+    TVMM = sum(
+      as.character(dados$SEXO_PROPRIETARIO) == "Masculino" &
+        as.character(dados$TIPO_VEICULO) == "Moto",
+      na.rm = TRUE
+    ),
+    TVC_22_34 = sum(
+      as.character(dados$TIPO_VEICULO) == "Carro" &
+        as.character(dados$F_IDADE) == "22 a 34",
+      na.rm = TRUE
+    ),
+    TVC_35_45 = sum(
+      as.character(dados$TIPO_VEICULO) == "Carro" &
+        as.character(dados$F_IDADE) == "35 a 45",
+      na.rm = TRUE
+    ),
+    # Mulheres + Carro
+    IMVCF = ifelse(
+      sum(!is.na(mulheres_carro$IDADE_PROPRIETARIO)) > 0,
+      mean(mulheres_carro$IDADE_PROPRIETARIO, na.rm = TRUE),
+      NA
+    ),
+    DPVCF = ifelse(
+      sum(!is.na(mulheres_carro$IDADE_PROPRIETARIO)) > 1,
+      sd(mulheres_carro$IDADE_PROPRIETARIO, na.rm = TRUE),
+      NA
+    ),
+    IVCF_P25 = p25(mulheres_carro$IDADE_PROPRIETARIO),
+    IVCF_P50 = p50(mulheres_carro$IDADE_PROPRIETARIO),
+    IVCF_P75 = p75(mulheres_carro$IDADE_PROPRIETARIO),
+    # Homens + Moto
+    IMVMM = ifelse(
+      sum(!is.na(homens_moto$IDADE_PROPRIETARIO)) > 0,
+      mean(homens_moto$IDADE_PROPRIETARIO, na.rm = TRUE),
+      NA
+    ),
+    DPVMM = ifelse(
+      sum(!is.na(homens_moto$IDADE_PROPRIETARIO)) > 1,
+      sd(homens_moto$IDADE_PROPRIETARIO, na.rm = TRUE),
+      NA
+    ),
+    IVMM_P25 = p25(homens_moto$IDADE_PROPRIETARIO),
+    IVMM_P50 = p50(homens_moto$IDADE_PROPRIETARIO),
+    IVMM_P75 = p75(homens_moto$IDADE_PROPRIETARIO),
+    # Perfil PAM
+    TPIC = sum(dados$PAM == "PIC", na.rm = TRUE),
+    TAIC = sum(dados$PAM == "AIC", na.rm = TRUE),
+    TGIC = sum(dados$PAM == "GIC", na.rm = TRUE)
+  )
+}
+
+BANCO_UF = calcula_resumo(
+  dados_aula14,
+  nivel = "UF",
+  codigo = 51
+)
+
+municipios = unique(dados_aula14$MUNICIPIO)
+
+BANCO_MUNICIPIOS = do.call(
+  rbind,
+  lapply(municipios, function(m) {
+    calcula_resumo(
+      dados_aula14[dados_aula14$MUNICIPIO == m, ],
+      nivel = "MUNICIPIO",
+      codigo = m
+    )
+  })
+)
+
+BANCO_AULA14_RJ = rbind(
+  BANCO_UF,
+  BANCO_MUNICIPIOS
+)
+
+str(BANCO_AULA14_RJ)
+head(BANCO_AULA14_RJ)
+View(BANCO_AULA14_RJ)
 
 # Ao terminar a Tarefa 4 commit com a mensagem " script - tarefa 1 a 4" e envie para o repositório Aula_14_Extra
 
