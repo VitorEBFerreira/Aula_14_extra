@@ -248,7 +248,7 @@ calcula_resumo = function(dados, nivel, codigo) {
 BANCO_UF = calcula_resumo(
   dados_aula14,
   nivel = "UF",
-  codigo = 51
+  codigo = 33
 )
 
 municipios = unique(dados_aula14$MUNICIPIO)
@@ -275,7 +275,11 @@ View(BANCO_AULA14_RJ)
 
 # Ao terminar a Tarefa 4 commit com a mensagem " script - tarefa 1 a 4" e envie para o repositório Aula_14_Extra
 
-
 # Tarefa 5: Exportar o banco de dados BANCO_AULA14_RJ com o nome BANCO_AULA14_RJ.csv
+write.csv(BANCO_AULA14_RJ,
+          "BANCO_AULA14_RJ.csv",
+          row.names = FALSE)
+
+file.exists("BANCO_AULA14_RJ.csv")
 
 # Ao terminar a Tarefa 5 commit com a mensagem "dados e script - Etapa 2" e envie para o repositório Aula_14_Extra
