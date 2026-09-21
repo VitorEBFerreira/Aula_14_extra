@@ -46,6 +46,58 @@ table(dados_aula14$F_IDADE)
 # agregar ao banco dados_aula14 as informações de VALOR_P10 e VALOR_P90
 # criar a variável PAM (somente quando TIPO_VEICULO = "Carro"), de acordo com IDADE_PROPRIETARIO e SEXO_PROPRIETARIO, com as seguintes categorias:
 # PAM = "PIC", se VALOR_VEICULO < VALOR_P10; "AIC", se VALOR_P10 <= VALOR_VEICULO <= VALOR_P90; "GIC", se VALOR_VEICULO > VALOR_P90
+tabela_pam = read.csv("Tabela_PAM.csv",
+                      header = T,
+                      sep = ";",
+                      stringsAsFactors = F)
+str(tabela_pam)
+
+# Agregar VALOR_P10 e VALOR_P90 ao banco dados_aula14
+# usando IDADE_PROPRIETARIO e SEXO_PROPRIETARIO
+chave_dados = paste(dados_aula14$IDADE_PROPRIETARIO,
+                     dados_aula14$SEXO_PROPRIETARIO,
+                     sep = "_")
+
+chave_pam = paste(tabela_pam$IDADE_PROPRIETARIO,
+                   tabela_pam$SEXO_PROPRIETARIO,
+                   sep = "_")
+
+posicao = match(chave_dados, chave_pam)
+
+dados_aula14$VALOR_P10 = tabela_pam$VALOR_P10[posicao]
+dados_aula14$VALOR_P90 = tabela_pam$VALOR_P90[posicao]
+
+# Criar a variável PAM
+dados_aula14$PAM = NA_character_
+
+# PIC: valor do veículo abaixo do P10
+dados_aula14$PAM[
+  dados_aula14$TIPO_VEICULO == "Carro" &
+    !is.na(dados_aula14$VALOR_VEICULO) &
+    !is.na(dados_aula14$VALOR_P10) &
+    dados_aula14$VALOR_VEICULO < dados_aula14$VALOR_P10
+] = "PIC"
+
+# AIC: valor do veículo entre P10 e P90
+dados_aula14$PAM[
+  dados_aula14$TIPO_VEICULO == "Carro" &
+    !is.na(dados_aula14$VALOR_VEICULO) &
+    !is.na(dados_aula14$VALOR_P10) &
+    !is.na(dados_aula14$VALOR_P90) &
+    dados_aula14$VALOR_VEICULO >= dados_aula14$VALOR_P10 &
+    dados_aula14$VALOR_VEICULO <= dados_aula14$VALOR_P90
+] = "AIC"
+
+# GIC: valor do veículo acima do P90
+dados_aula14$PAM[
+  dados_aula14$TIPO_VEICULO == "Carro" &
+    !is.na(dados_aula14$VALOR_VEICULO) &
+    !is.na(dados_aula14$VALOR_P90) &
+    dados_aula14$VALOR_VEICULO > dados_aula14$VALOR_P90
+] = "GIC"
+
+head(dados_aula14)
+table(dados_aula14$PAM, useNA = "ifany")
 
 # Ao terminar a Tarefa 3 commit com a mensagem " script - tarefa 1 a 3" e envie para o repositório Aula_14_Extra
 
